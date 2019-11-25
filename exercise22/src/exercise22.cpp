@@ -26,13 +26,16 @@ bool ComparePoints(Point a, Point b);
 
 
 int main() {
-
 	vector<Point> points = GetPointList();
 
 	vector<Point> hull;
 	Point point;
 	bool endHull=false;
+	int hullCounter=0;
 
+	while(points.size()>2){
+	++hullCounter;
+	hull.clear();
 	hull.push_back(point);
 	hull.push_back(point);
 	hull.push_back(point);
@@ -64,47 +67,59 @@ int main() {
 	int count=hull.size()-1;
 	bool noMorePointsFlag=true;
 
-	while(!endHull){
-		//Point Between Lines clear in every iteration
-		pbl.clear();
-		for(int i=0;i<points.size();i++){
-			if(count==0){
-				//Last and first comparison
-				if(ORI(hull[0],hull[hull.size()-1],points[i])==-1
-						&& !(ComparePoints(points[i],hull[0]) ||
-								ComparePoints(points[i],hull[hull.size()-1]))){
-					pbl.push_back(points[i]);
-					noMorePointsFlag=false;
+		while(!endHull){
+			//Point Between Lines clear in every iteration
+			pbl.clear();
+			for(int i=0;i<points.size();i++){
+				if(count==0){
+					//Last and first comparison
+					if(ORI(hull[0],hull[hull.size()-1],points[i])==-1
+							&& !(ComparePoints(points[i],hull[0]) ||
+									ComparePoints(points[i],hull[hull.size()-1]))){
+						pbl.push_back(points[i]);
+						noMorePointsFlag=false;
+					}
+				}else{
+					//Compare by segments counter-clock whise 3-2 2-1 1-0 0-3
+					if(ORI(hull[count],hull[count-1],points[i])==-1
+							&& !(ComparePoints(points[i],hull[count]) ||
+									ComparePoints(points[i],hull[count-1])||
+										ComparePoints(hull[count],hull[count-1]))){
+						pbl.push_back(points[i]);
+						noMorePointsFlag=false;
+					}
 				}
-			}else{
-				//Compare by segments counter-clock whise 3-2 2-1 1-0 0-3
-				if(ORI(hull[count],hull[count-1],points[i])==-1
-						&& !(ComparePoints(points[i],hull[count]) ||
-								ComparePoints(points[i],hull[count-1])||
-									ComparePoints(hull[count],hull[count-1]))){
-					pbl.push_back(points[i]);
-					noMorePointsFlag=false;
+			}
+			if(pbl.size()!=0){
+				Point farPoint=PointLineDistance(hull[count],hull[count-1],pbl);
+				hull.insert(hull.begin()+count,farPoint);
+			}
+			count--;
+			if(count==-1){
+				if(noMorePointsFlag){
+					endHull=true;
+				}else{
+					noMorePointsFlag=true;
+					count=hull.size()-1;
 				}
 			}
 		}
-		if(pbl.size()!=0){
-			Point farPoint=PointLineDistance(hull[count],hull[count-1],pbl);
-			hull.insert(hull.begin()+count,farPoint);
-		}
-		count--;
-		if(count==-1){
-			if(noMorePointsFlag){
-				endHull=true;
-			}else{
-				noMorePointsFlag=true;
-				count=hull.size()-1;
-			}
-		}
-	}
 
-	cout << hull.size() << " # convex hull contains "<< hull.size() <<" points" << endl;
-	for(int i=0;i<hull.size();i++){
-		cout << hull[i].x << " " << hull[i].y << endl;
+		cout << hull.size() << " # "<< hullCounter << "st onion layer ( convex hull ) contains "<<hull.size()<<" points" << endl;
+
+		for(int i=0;i<hull.size();i++){
+			cout << hull[i].x << " " << hull[i].y << endl;
+		}
+
+		//Delete use points
+		for(int i=0;i<hull.size();i++){
+			for(int k=0;k<points.size();k++){
+				if(ComparePoints(hull[i],points[k])){
+					points.erase(points.begin()+k);
+					break;
+				}
+			}
+		}
 	}
 }
 
