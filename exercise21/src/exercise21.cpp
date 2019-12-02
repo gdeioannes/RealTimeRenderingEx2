@@ -13,95 +13,134 @@ using namespace std;
 
 class Point{
 public:
-	bool pick=true;
+	bool pick=false;
 	float x=0;
 	float y=0;
+	float i=0;
 };
 
 vector<Point> GetPointList();
 int ORI(Point p1, Point p2,Point p3);
-Point PointLineDistance(Point a, Point b, vector<Point> list);
+float PointLineDistance(Point a,Point b,Point c);
 vector<Point> DeleteDuplicates(vector<Point> list);
 bool ComparePoints(Point a, Point b);
-
+//Operation counter just for fun to see the number of operation and the reductions
+//using the reduced list in every iteration
 
 int main() {
 
 	vector<Point> points = GetPointList();
 
+	//Use this list to store the point when doing the CCW sweep for the quick hull and
+	//the use is to avoid reading point inside the hull in the iteration
+	vector<Point> savePoints;
+
 	vector<Point> hull;
+	int numberBeginHull=4;
 	Point point;
-	bool endHull=false;
 
-	hull.push_back(point);
-	hull.push_back(point);
-	hull.push_back(point);
-	hull.push_back(point);
-
-	//cout << "end" << endl;
+	for(int i=0;i<numberBeginHull;i++){
+		hull.push_back(point);
+	}
+	//Pick extremes point of the Hull
+	//The active thing by now is to avoid adding point with default 0 in the integer
+	//when the object is initialized
 	for(int i=0;i<points.size();i++){
-		if(points[i].x > hull[3].x || hull[3].pick){
+		if(points[i].x > hull[3].x || !hull[3].pick){
 			hull[3]=points[i];
-			hull[3].pick=false;
+			hull[3].i=i;
+			hull[3].pick=true;
 		}
-		if(points[i].y > hull[2].y || hull[2].pick){
+		if(points[i].y > hull[2].y || !hull[2].pick){
 			hull[2]=points[i];
-			hull[2].pick=false;
+			hull[2].i=i;
+			hull[2].pick=true;
 		}
-		if(points[i].x < hull[1].x || hull[1].pick){
+		if(points[i].x < hull[1].x || !hull[1].pick){
 			hull[1]=points[i];
-			hull[1].pick=false;
+			hull[1].i=i;
+			hull[1].pick=true;
 		}
-		if(points[i].y < hull[0].y || hull[0].pick){
+		if(points[i].y < hull[0].y || !hull[0].pick){
 			hull[0]=points[i];
-			hull[0].pick=false;
+			hull[0].i=i;
+			hull[0].pick=true;
 		}
 	}
-
+	//Delete duplicated points
 	hull=DeleteDuplicates(hull);
 
-	vector<Point> pbl;
-	int count=hull.size()-1;
-	bool noMorePointsFlag=true;
+	//Delete hull points from list
+	for(int i=0;i<hull.size();i++){
+		points.erase(points.begin()+hull[i].i);
+	}
 
-	while(!endHull){
-		//Point Between Lines clear in every iteration
-		pbl.clear();
+	//Counter to keep track of the place in the list of the hull to add and move points
+	int count=hull.size()-1;
+
+	bool check=true;
+	int a=0;
+	int b=0;
+	//This while runs the logic of Quick Hull until doen't find more points between lines
+	while(true){
+		//When the counter is 0, we need to compare the last line which is  the element of the
+		//hull with the first ones
+		if(count==0){
+			a=0;
+			b=hull.size()-1;
+		}else{
+			a=count;
+			b=count-1;
+		}
+
+		//Cover all the points in reference to the n points of the hull increasing over iteration
+		int index=-1;
+		float dist=-1;
 		for(int i=0;i<points.size();i++){
-			if(count==0){
-				//Last and first comparison
-				if(ORI(hull[0],hull[hull.size()-1],points[i])==-1
-						&& !(ComparePoints(points[i],hull[0]) ||
-								ComparePoints(points[i],hull[hull.size()-1]))){
-					pbl.push_back(points[i]);
-					noMorePointsFlag=false;
+			if(ORI(hull[a],hull[b],points[i])==-1){
+				if(PointLineDistance(hull[a],hull[b],points[i]) >= dist){
+					index=savePoints.size();
+					dist=PointLineDistance(hull[a],hull[b],points[i]);
 				}
-			}else{
-				//Compare by segments counter-clock whise 3-2 2-1 1-0 0-3
-				if(ORI(hull[count],hull[count-1],points[i])==-1
-						&& !(ComparePoints(points[i],hull[count]) ||
-								ComparePoints(points[i],hull[count-1])||
-									ComparePoints(hull[count],hull[count-1]))){
-					pbl.push_back(points[i]);
-					noMorePointsFlag=false;
-				}
+				savePoints.push_back(Point(points[i]));
+				//I'm adding this because maybe there is special cases in big random clouds
+				//where one side share points of the other, in those cases may add point in both sides
+				//and the algorithm never stops this way we delete the point after finding they belong to
+				//a specific hull side
+				points.erase(points.begin()+i);
+				i--;
 			}
 		}
-		if(pbl.size()!=0){
-			Point farPoint=PointLineDistance(hull[count],hull[count-1],pbl);
-			hull.insert(hull.begin()+count,farPoint);
+
+		if(index!=-1){
+			//Add the point to the hull and delete it from the saved points
+			hull.insert(hull.begin()+a,savePoints[index]);
+			savePoints.erase(savePoints.begin()+index);
+			check=false;
 		}
+
+		//Reduce the counters to read the next segment of the hull in the iteration
 		count--;
+
+		//If the counter is -1 means that we read the the segments of the quick Hull
 		if(count==-1){
-			if(noMorePointsFlag){
-				endHull=true;
+			if(check){
+				break;
 			}else{
-				noMorePointsFlag=true;
+				check=true;
+				//Reset counter to start to read again from the beginning hull with new points
 				count=hull.size()-1;
+				//Saved points are the new points to compare with the hull
+				//a cool optimization would be to only compare sides of the hull with prior points to compare
+				points=savePoints;
+				savePoints.clear();
 			}
 		}
 	}
 
+	//For efficiency delete duplicates at the end
+	hull=DeleteDuplicates(hull);
+	//Write hull info
 	cout << hull.size() << " # convex hull contains "<< hull.size() <<" points" << endl;
 	for(int i=0;i<hull.size();i++){
 		cout << hull[i].x << " " << hull[i].y << endl;
@@ -118,7 +157,6 @@ vector<Point> DeleteDuplicates(vector<Point> list){
 				}
 			}
 		}
-
 	}
 	return list;
 }
@@ -133,6 +171,7 @@ vector<Point> GetPointList(){
 	ss >> num;
 	//List of Points
 	vector<Point> points;
+
 	while(getline(cin,str)){
 		istringstream ss(str);
 		Point point;
@@ -143,29 +182,18 @@ vector<Point> GetPointList(){
 			break;
 		}
 	}
-
 	return points;
 }
 
-Point PointLineDistance(Point a, Point b, vector<Point> list){
+float PointLineDistance(Point a, Point b,Point c){
 
-	Point f;
-	float saveh=0;
-
-	for(int i=0;i<list.size();i++){
-		Point c=list[i];
-		float s1= sqrt(pow(a.x-b.x,2)+pow(a.y-b.y,2));
-		float s2=sqrt(pow(a.x-c.x,2)+pow(a.y-c.y,2));
-		float s3=sqrt(pow(b.x-c.x,2)+pow(b.y-c.y,2));
-		float s=(s1+s2+s3)/2;
-		float area= sqrt(s*(s-s1)*(s-s2)*(s-s3));
-		float h=area/(0.5*s1);
-		if(saveh<h){
-			saveh=h;
-			f=c;
-		}
-	}
-	return f;
+	float s1= sqrt(pow(a.x-b.x,2)+pow(a.y-b.y,2));
+	float s2=sqrt(pow(a.x-c.x,2)+pow(a.y-c.y,2));
+	float s3=sqrt(pow(b.x-c.x,2)+pow(b.y-c.y,2));
+	float s=(s1+s2+s3)/2;
+	float area= sqrt(s*(s-s1)*(s-s2)*(s-s3));
+	float h=area/(0.5*s1);
+	return h;
 }
 
 bool ComparePoints(Point a, Point b){
@@ -178,12 +206,8 @@ int ORI(Point p1, Point p2,Point p3){
 	double dx31 = p3.x - p1.x;
 	double dy31 = p3.y - p1.y;
 	if (dx21*dy31 < dy21*dx31) return -1; // ccw
-
 	if (dx21*dy31 > dy21*dx31) return +1; // cw
-
 	if (dx21*dx31 < 0 || dy21*dy31<0) return -1; // ccw
-
 	if (dx31*dx31 + dy31*dy31 > dx21*dx21 + dy21*dy21) return +1; //cw
-
 	return 0; // p3 is inside p1,p2
 }
