@@ -16,15 +16,21 @@ public:
 	bool pick=false;
 	float x=0;
 	float y=0;
-	float i=0;
 };
 
 vector<Point> GetPointList();
 int ORI(Point p1, Point p2,Point p3);
 float PointLineDistance(Point a,Point b,Point c);
 vector<Point> DeleteDuplicates(vector<Point> list);
+vector<int> DeleteDuplicatesInt(vector<int> list);
 bool ComparePoints(Point a, Point b);
 int getBottomLeft(vector<Point> list);
+
+bool compareInterval(int i1, int i2)
+{
+    return (i1 > i2);
+}
+
 //Operation counter just for fun to see the number of operation and the reductions
 //using the reduced list in every iteration
 
@@ -40,11 +46,13 @@ int main() {
 	vector<Point> savePoints;
 
 	vector<Point> hull;
+	vector<int> hullPointdeleteOrder;
 	int numberBeginHull=4;
 	Point point;
 
 	for(int i=0;i<numberBeginHull;i++){
 		hull.push_back(point);
+		hullPointdeleteOrder.push_back(0);
 	}
 	//Pick extremes point of the Hull
 	//The active thing by now is to avoid adding point with default 0 in the integer
@@ -52,33 +60,39 @@ int main() {
 	for(int i=0;i<points.size();i++){
 		if(points[i].x > hull[3].x || !hull[3].pick){
 			hull[3]=points[i];
-			hull[3].i=i;
+			hullPointdeleteOrder[3]=i;
 			hull[3].pick=true;
 			xMin=points[i].x;
 		}
 		if(points[i].y > hull[2].y || !hull[2].pick){
 			hull[2]=points[i];
-			hull[2].i=i;
+			hullPointdeleteOrder[2]=i;
 			hull[2].pick=true;
 		}
 		if(points[i].x < hull[1].x || !hull[1].pick){
 			hull[1]=points[i];
-			hull[1].i=i;
+			hullPointdeleteOrder[1]=i;
 			hull[1].pick=true;
 		}
 		if(points[i].y < hull[0].y || !hull[0].pick){
 			hull[0]=points[i];
-			hull[0].i=i;
+			hullPointdeleteOrder[0]=i;
 			hull[0].pick=true;
 			yMin=points[i].y;
 		}
 	}
+
+	sort(hullPointdeleteOrder.begin(), hullPointdeleteOrder.end(), compareInterval);
+
 	//Delete duplicated points
 	hull=DeleteDuplicates(hull);
 	//Delete hull points from list
-	for(int i=0;i<hull.size();i++){
-		points.erase(points.begin()+hull[i].i);
+	hullPointdeleteOrder=DeleteDuplicatesInt(hullPointdeleteOrder);
+	for(int i=0;i<hullPointdeleteOrder.size();i++){
+		cout << hullPointdeleteOrder[i] << endl;
+		points.erase(points.begin()+hullPointdeleteOrder[i]);
 	}
+
 	//Counter to keep track of the place in the list of the hull to add and move points
 	int count=hull.size()-1;
 
@@ -183,6 +197,20 @@ vector<Point> DeleteDuplicates(vector<Point> list){
 		for(int k=0;k<list.size();k++){
 			if(i!=k){
 				if(ComparePoints(list[i],list[k])){
+					list.erase(list.begin()+i);
+					break;
+				}
+			}
+		}
+	}
+	return list;
+}
+
+vector<int> DeleteDuplicatesInt(vector<int> list){
+	for(int i=0;i<list.size();i++){
+		for(int k=0;k<list.size();k++){
+			if(i!=k){
+				if(list[i]==list[k]){
 					list.erase(list.begin()+i);
 					break;
 				}
