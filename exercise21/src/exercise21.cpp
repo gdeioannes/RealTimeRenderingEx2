@@ -24,8 +24,12 @@ int ORI(Point p1, Point p2,Point p3);
 float PointLineDistance(Point a,Point b,Point c);
 vector<Point> DeleteDuplicates(vector<Point> list);
 bool ComparePoints(Point a, Point b);
+int getBottomLeft(vector<Point> list);
 //Operation counter just for fun to see the number of operation and the reductions
 //using the reduced list in every iteration
+
+int xMin;
+int yMin;
 
 int main() {
 
@@ -50,6 +54,7 @@ int main() {
 			hull[3]=points[i];
 			hull[3].i=i;
 			hull[3].pick=true;
+			xMin=points[i].x;
 		}
 		if(points[i].y > hull[2].y || !hull[2].pick){
 			hull[2]=points[i];
@@ -65,16 +70,15 @@ int main() {
 			hull[0]=points[i];
 			hull[0].i=i;
 			hull[0].pick=true;
+			yMin=points[i].y;
 		}
 	}
 	//Delete duplicated points
 	hull=DeleteDuplicates(hull);
-
 	//Delete hull points from list
 	for(int i=0;i<hull.size();i++){
 		points.erase(points.begin()+hull[i].i);
 	}
-
 	//Counter to keep track of the place in the list of the hull to add and move points
 	int count=hull.size()-1;
 
@@ -137,15 +141,42 @@ int main() {
 			}
 		}
 	}
-
 	//For efficiency delete duplicates at the end
 	hull=DeleteDuplicates(hull);
+	int hullIndex=getBottomLeft(hull);
 	//Write hull info
 	cout << hull.size() << " # convex hull contains "<< hull.size() <<" points" << endl;
-	for(int i=0;i<hull.size();i++){
+	int i=hullIndex;
+
+	//This while write the points from the bottom left CW reading the array that way
+	while(true){
 		cout << hull[i].x << " " << hull[i].y << endl;
+		i++;
+		if(i>=hull.size()){
+					i=0;
+				}
+				if(i==hullIndex){
+					break;
+				}
 	}
 }
+
+int getBottomLeft(vector<Point> list){
+	float saveDist=10000000;
+	int index;
+	for(int i=0;i<list.size();i++){
+		float cat1=list[i].x-xMin;
+		float cat2=list[i].y-yMin;
+		float dist=sqrt(pow(cat1,2)+pow(cat2,2));
+		if(dist<saveDist){
+			saveDist=dist;
+			index=i;
+		}
+
+	}
+	return index;
+}
+
 
 vector<Point> DeleteDuplicates(vector<Point> list){
 	for(int i=0;i<list.size();i++){
