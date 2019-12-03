@@ -24,12 +24,9 @@ float PointLineDistance(Point a,Point b,Point c);
 vector<Point> DeleteDuplicates(vector<Point> list);
 vector<int> DeleteDuplicatesInt(vector<int> list);
 bool ComparePoints(Point a, Point b);
-int getBottomLeft(vector<Point> list);
-
-bool compareInterval(int i1, int i2)
-{
-    return (i1 > i2);
-}
+int GetBottomLeft(vector<Point> list);
+bool CompareInterval(int i1, int i2);
+vector<Point> DeleteColinearPoints(vector<Point> list);
 
 //Operation counter just for fun to see the number of operation and the reductions
 //using the reduced list in every iteration
@@ -82,14 +79,13 @@ int main() {
 		}
 	}
 
-	sort(hullPointdeleteOrder.begin(), hullPointdeleteOrder.end(), compareInterval);
+	sort(hullPointdeleteOrder.begin(), hullPointdeleteOrder.end(), CompareInterval);
 
 	//Delete duplicated points
 	hull=DeleteDuplicates(hull);
 	//Delete hull points from list
 	hullPointdeleteOrder=DeleteDuplicatesInt(hullPointdeleteOrder);
 	for(int i=0;i<hullPointdeleteOrder.size();i++){
-		cout << hullPointdeleteOrder[i] << endl;
 		points.erase(points.begin()+hullPointdeleteOrder[i]);
 	}
 
@@ -157,7 +153,8 @@ int main() {
 	}
 	//For efficiency delete duplicates at the end
 	hull=DeleteDuplicates(hull);
-	int hullIndex=getBottomLeft(hull);
+	hull=DeleteColinearPoints(hull);
+	int hullIndex=GetBottomLeft(hull);
 	//Write hull info
 	cout << hull.size() << " # convex hull contains "<< hull.size() <<" points" << endl;
 	int i=hullIndex;
@@ -175,7 +172,39 @@ int main() {
 	}
 }
 
-int getBottomLeft(vector<Point> list){
+vector<Point> DeleteColinearPoints(vector<Point> list){
+	int left=0;
+	int right=0;
+	int count=0;
+	bool deleteCenter=false;
+	while(true){
+		left=count-1;
+		right=count+1;
+		if(left<0){
+			left=list.size()-1;
+		}
+		if(right>list.size()-1){
+			right=0;
+		}
+		if(ORI(list[left],list[right],list[count])==0){
+			list.erase(list.begin()+count);
+			count--;
+		}
+
+		count++;
+		if(count>=list.size()){
+			break;
+		}
+	}
+	return list;
+}
+
+bool CompareInterval(int i1, int i2)
+{
+    return (i1 > i2);
+}
+
+int GetBottomLeft(vector<Point> list){
 	float saveDist=10000000;
 	int index;
 	for(int i=0;i<list.size();i++){
@@ -198,7 +227,7 @@ vector<Point> DeleteDuplicates(vector<Point> list){
 			if(i!=k){
 				if(ComparePoints(list[i],list[k])){
 					list.erase(list.begin()+i);
-					break;
+					i--;
 				}
 			}
 		}
@@ -212,7 +241,7 @@ vector<int> DeleteDuplicatesInt(vector<int> list){
 			if(i!=k){
 				if(list[i]==list[k]){
 					list.erase(list.begin()+i);
-					break;
+					i--;
 				}
 			}
 		}
