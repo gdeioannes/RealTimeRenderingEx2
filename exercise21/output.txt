@@ -1,4 +1,4 @@
-3 # convex hull contains 3 points
+3
 4 2
 2 2
 2 4

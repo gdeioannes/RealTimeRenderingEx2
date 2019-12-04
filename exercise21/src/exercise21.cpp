@@ -7,6 +7,7 @@
 #include <list>
 #include <vector>
 #include <math.h>
+#include <algorithm>
 
 using namespace std;
 
@@ -157,7 +158,7 @@ int main() {
 	hull=DeleteColinearPoints(hull);
 	int hullIndex=GetBottomLeft(hull);
 	//Write hull info
-	cout << hull.size() << " # convex hull contains "<< hull.size() <<" points" << endl;
+	cout << hull.size() << endl;
 	int i=hullIndex;
 
 	//This while write the points from the bottom left CW reading the array that way

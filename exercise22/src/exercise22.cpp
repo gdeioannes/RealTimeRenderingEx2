@@ -177,7 +177,7 @@ int main() {
 		hull=DeleteColinearPoints(hull);
 		int hullIndex=GetBottomLeft(hull);
 		//Write hull info
-		cout << hull.size() << " # convex hull contains "<< hull.size() <<" points" << endl;
+		cout << hull.size() << endl;
 		int i=hullIndex;
 
 		//This while write the points from the bottom left CW reading the array that way
@@ -248,11 +248,15 @@ int GetBottomLeft(vector<Point> list){
 
 vector<Point> DeleteDuplicates(vector<Point> list){
 	for(int i=0;i<list.size();i++){
+		int count=0;
 		for(int k=0;k<list.size();k++){
 			if(i!=k){
 				if(ComparePoints(list[i],list[k])){
-					list.erase(list.begin()+i);
-					i--;
+					count++;
+					if(count>1){
+						list.erase(list.begin()+i);
+						i--;
+					}
 				}
 			}
 		}
@@ -262,11 +266,15 @@ vector<Point> DeleteDuplicates(vector<Point> list){
 
 vector<int> DeleteDuplicatesInt(vector<int> list){
 	for(int i=0;i<list.size();i++){
+		int count=0;
 		for(int k=0;k<list.size();k++){
 			if(i!=k){
 				if(list[i]==list[k]){
-					list.erase(list.begin()+i);
-					i--;
+					count++;
+					if(count>1){
+						list.erase(list.begin()+i);
+						i--;
+					}
 				}
 			}
 		}
