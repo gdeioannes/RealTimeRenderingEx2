@@ -70,7 +70,6 @@ int main() {
 					hull[3]=points[i];
 					hullPointdeleteOrder[3]=i;
 					hull[3].pick=true;
-					xMin=points[i].x;
 				}
 				if(points[i].y > hull[2].y || !hull[2].pick){
 					hull[2]=points[i];
@@ -81,6 +80,7 @@ int main() {
 					hull[1]=points[i];
 					hullPointdeleteOrder[1]=i;
 					hull[1].pick=true;
+					xMin=points[i].x;
 				}
 				if(points[i].y < hull[0].y || !hull[0].pick){
 					hull[0]=points[i];
@@ -243,7 +243,7 @@ int GetBottomLeft(vector<Point> list){
 		float cat2=list[i].y-yMin;
 		float dist=sqrt(pow(cat1,2)+pow(cat2,2));
 		if(dist<saveDist){
-			if(list[i].y<saveY){
+			if(list[i].y<=saveY){
 				saveDist=dist;
 				saveY=list[i].y;
 				index=i;
