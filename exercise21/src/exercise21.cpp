@@ -221,10 +221,6 @@ int GetBottomLeft(vector<Point> list){
 		float cat1=list[i].x-xMin;
 		float cat2=list[i].y-yMin;
 		float dist=sqrt(pow(cat1,2)+pow(cat2,2));
-		cout << list[i].x << " " << list[i].y << endl;
-		cout << "dit:" <<dist << endl;
-		cout << "xmin:" << xMin << endl;
-		cout << "ymin:" << yMin << endl;
 		if(dist<saveDist){
 			if(list[i].y<=saveY){
 				saveDist=dist;
