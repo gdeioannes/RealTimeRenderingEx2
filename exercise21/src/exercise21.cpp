@@ -13,8 +13,8 @@ using namespace std;
 class Point{
 public:
 	bool pick=false;
-	float x=0;
-	float y=0;
+	int x=0;
+	int y=0;
 };
 
 vector<Point> GetPointList();
@@ -84,9 +84,11 @@ int main() {
 	hull=DeleteDuplicates(hull);
 	//Delete hull points from list
 	hullPointdeleteOrder=DeleteDuplicatesInt(hullPointdeleteOrder);
+
 	for(int i=0;i<hullPointdeleteOrder.size();i++){
 		points.erase(points.begin()+hullPointdeleteOrder[i]);
 	}
+
 
 	//Counter to keep track of the place in the list of the hull to add and move points
 	int count=hull.size()-1;
@@ -222,11 +224,15 @@ int GetBottomLeft(vector<Point> list){
 
 vector<Point> DeleteDuplicates(vector<Point> list){
 	for(int i=0;i<list.size();i++){
+		int count=0;
 		for(int k=0;k<list.size();k++){
 			if(i!=k){
 				if(ComparePoints(list[i],list[k])){
-					list.erase(list.begin()+i);
-					i--;
+					count++;
+					if(count>1){
+						list.erase(list.begin()+i);
+						i--;
+					}
 				}
 			}
 		}
@@ -236,11 +242,15 @@ vector<Point> DeleteDuplicates(vector<Point> list){
 
 vector<int> DeleteDuplicatesInt(vector<int> list){
 	for(int i=0;i<list.size();i++){
+		int count=0;
 		for(int k=0;k<list.size();k++){
 			if(i!=k){
 				if(list[i]==list[k]){
-					list.erase(list.begin()+i);
-					i--;
+					count++;
+					if(count>1){
+						list.erase(list.begin()+i);
+						i--;
+					}
 				}
 			}
 		}
