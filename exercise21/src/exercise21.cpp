@@ -79,6 +79,7 @@ int main() {
 		}
 	}
 
+
 	sort(hullPointdeleteOrder.begin(), hullPointdeleteOrder.end(), CompareInterval);
 
 	//Delete duplicated points
@@ -89,7 +90,6 @@ int main() {
 	for(int i=0;i<hullPointdeleteOrder.size();i++){
 		points.erase(points.begin()+hullPointdeleteOrder[i]);
 	}
-
 
 	//Counter to keep track of the place in the list of the hull to add and move points
 	int count=hull.size()-1;
@@ -180,6 +180,9 @@ vector<Point> DeleteColinearPoints(vector<Point> list){
 	int count=0;
 	bool deleteCenter=false;
 	while(true){
+		if(list.size()<3){
+			break;
+		}
 		left=count-1;
 		right=count+1;
 		if(left<0){
@@ -230,7 +233,7 @@ vector<Point> DeleteDuplicates(vector<Point> list){
 			if(i!=k){
 				if(ComparePoints(list[i],list[k])){
 					count++;
-					if(count>1){
+					if(count>=1){
 						list.erase(list.begin()+i);
 						i--;
 					}
@@ -248,7 +251,7 @@ vector<int> DeleteDuplicatesInt(vector<int> list){
 			if(i!=k){
 				if(list[i]==list[k]){
 					count++;
-					if(count>1){
+					if(count>=1){
 						list.erase(list.begin()+i);
 						i--;
 					}

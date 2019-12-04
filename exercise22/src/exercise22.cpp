@@ -8,6 +8,7 @@
 #include <list>
 #include <vector>
 #include <math.h>
+#include <algorithm>
 
 using namespace std;
 
@@ -203,6 +204,9 @@ vector<Point> DeleteColinearPoints(vector<Point> list){
 	int count=0;
 	bool deleteCenter=false;
 	while(true){
+		if(list.size()<3){
+			break;
+		}
 		left=count-1;
 		right=count+1;
 		if(left<0){
