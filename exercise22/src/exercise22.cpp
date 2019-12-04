@@ -178,21 +178,22 @@ int main() {
 		hull=DeleteColinearPoints(hull);
 		int hullIndex=GetBottomLeft(hull);
 		//Write hull info
-		cout << hull.size() << endl;
-		int i=hullIndex;
+		if(hull.size()>=3){
+			cout << hull.size() << endl;
+			int i=hullIndex;
 
-		//This while write the points from the bottom left CW reading the array that way
-		while(true){
-			cout << hull[i].x << " " << hull[i].y << endl;
-			i++;
-			if(i>=hull.size()){
-						i=0;
-					}
-					if(i==hullIndex){
-						break;
-					}
+			//This while write the points from the bottom left CW reading the array that way
+			while(true){
+				cout << hull[i].x << " " << hull[i].y << endl;
+				i++;
+				if(i>=hull.size()){
+							i=0;
+						}
+						if(i==hullIndex){
+							break;
+						}
+			}
 		}
-
 
 		points=savePointList;
 	}
@@ -235,55 +236,66 @@ bool CompareInterval(int i1, int i2)
 
 int GetBottomLeft(vector<Point> list){
 	float saveDist=10000000;
+	float saveY=10000000;
 	int index;
 	for(int i=0;i<list.size();i++){
 		float cat1=list[i].x-xMin;
 		float cat2=list[i].y-yMin;
 		float dist=sqrt(pow(cat1,2)+pow(cat2,2));
 		if(dist<saveDist){
-			saveDist=dist;
-			index=i;
+			if(list[i].y<saveY){
+				saveDist=dist;
+				saveY=list[i].y;
+				index=i;
+			}
 		}
 
 	}
 	return index;
 }
 
-
 vector<Point> DeleteDuplicates(vector<Point> list){
-	for(int i=0;i<list.size();i++){
-		int count=0;
-		for(int k=0;k<list.size();k++){
-			if(i!=k){
-				if(ComparePoints(list[i],list[k])){
-					count++;
-					if(count>1){
-						list.erase(list.begin()+i);
-						i--;
-					}
+	vector<Point> newList;
+	vector<Point> eraseList=vector<Point>(list);
+	bool flag=false;
+	while(eraseList.size()>=1){
+		Point pCompare=eraseList[0];
+		for(int k=eraseList.size()-1;k>=0;k--){
+			//Start from the last
+			if(ComparePoints(pCompare,eraseList[k])){
+				if(!flag){
+					newList.push_back(pCompare);
 				}
+				flag=true;
+				eraseList.erase(eraseList.begin()+k);
 			}
 		}
+		flag=false;
+		list=vector<Point>(eraseList);
 	}
-	return list;
+	return newList;
 }
 
 vector<int> DeleteDuplicatesInt(vector<int> list){
-	for(int i=0;i<list.size();i++){
-		int count=0;
-		for(int k=0;k<list.size();k++){
-			if(i!=k){
-				if(list[i]==list[k]){
-					count++;
-					if(count>1){
-						list.erase(list.begin()+i);
-						i--;
-					}
+	vector<int> newList;
+	vector<int> eraseList=vector<int>(list);
+	bool flag=false;
+	while(eraseList.size()>=1){
+		int pCompare=eraseList[0];
+		for(int k=eraseList.size()-1;k>=0;k--){
+			//Start from the last
+			if(pCompare==eraseList[k]){
+				if(!flag){
+					newList.push_back(pCompare);
 				}
+				flag=true;
+				eraseList.erase(eraseList.begin()+k);
 			}
 		}
+		flag=false;
+		list=vector<int>(eraseList);
 	}
-	return list;
+	return newList;
 }
 
 vector<Point> GetPointList(){
